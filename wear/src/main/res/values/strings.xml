@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">HNDSHK</string>
+    <string name="hello_round">Hello Round World!</string>
+    <string name="hello_square">Hello HNDSHK World!</string>
+    <string name="shake_button">shake</string>
+    <string name="record_button">record</string>
+</resources>
