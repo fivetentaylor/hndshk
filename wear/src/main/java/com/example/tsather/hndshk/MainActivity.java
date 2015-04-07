@@ -59,7 +59,7 @@ public class MainActivity extends Activity {
             // Call a method from the LocalService.
             // However, if this call were something that might hang, then this request should
             // occur in a separate thread to avoid slowing down the activity performance.
-            int num = mService.getRandomNumber();
+            double num = mService.getRandomNumber();
             Toast.makeText(this, "number: " + num, Toast.LENGTH_SHORT).show();
         }
     }

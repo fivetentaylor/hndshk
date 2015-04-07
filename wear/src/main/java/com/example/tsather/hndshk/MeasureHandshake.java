@@ -2,15 +2,18 @@ package com.example.tsather.hndshk;
 
 import android.app.Service;
 import android.content.Intent;
+import android.hardware.SensorEventListener;
 import android.os.IBinder;
 import java.util.Random;
 import android.os.Binder;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.content.Context;
 
-public class MeasureHandshake extends Service {
+public class MeasureHandshake extends Service implements SensorEventListener {
 
     // Binder given to clients
     private final IBinder mBinder = new LocalBinder();
@@ -19,8 +22,13 @@ public class MeasureHandshake extends Service {
 
     private SensorManager mSensorManager;
     private Sensor mSensor;
+    double ax,ay,az;   // these are the acceleration in x,y and z axis
 
-
+    public void onCreate() {
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
+    }
 
     /**
      * Class used for the client Binder.  Because we know this service always
@@ -28,9 +36,6 @@ public class MeasureHandshake extends Service {
      */
     public class LocalBinder extends Binder {
         MeasureHandshake getService() {
-            mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-            mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-
             // Return this instance of LocalService so clients can call public methods
             return MeasureHandshake.this;
         }
@@ -42,8 +47,22 @@ public class MeasureHandshake extends Service {
     }
 
     /** method for clients */
-    public int getRandomNumber() {
+    public double getRandomNumber() {
         //return mSensorManager.registerListener();
-        return mGenerator.nextInt(100);
+        //return mGenerator.nextInt(100);
+        return ax;
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor arg0, int arg1) {
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType()==Sensor.TYPE_LINEAR_ACCELERATION){
+            ax=event.values[0];
+            ay=event.values[1];
+            az=event.values[2];
+        }
     }
 }
