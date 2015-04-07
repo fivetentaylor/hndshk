@@ -12,7 +12,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/record_button"
-        android:id="@+id/record" />
+        android:id="@+id/record"
+        android:onClick="playSoundOnClick"/>
 
     <Button
         android:layout_width="wrap_content"

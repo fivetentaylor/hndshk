@@ -14,12 +14,16 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.Context;
 import android.view.View;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Vibrator;
 
 public class MainActivity extends Activity {
 
     MeasureHandshake mService;
     boolean mBound = false;
     private TextView mTextView;
+    private MediaPlayer mPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +36,7 @@ public class MainActivity extends Activity {
                 mTextView = (TextView) stub.findViewById(R.id.text);
             }
         });
+        mPlayer = MediaPlayer.create(this, R.raw.knuckles);
     }
 
     @Override
@@ -50,6 +55,7 @@ public class MainActivity extends Activity {
             unbindService(mConnection);
             mBound = false;
         }
+        mPlayer.release();
     }
 
     /** Called when a button is clicked (the button in the layout file attaches to
@@ -59,9 +65,15 @@ public class MainActivity extends Activity {
             // Call a method from the LocalService.
             // However, if this call were something that might hang, then this request should
             // occur in a separate thread to avoid slowing down the activity performance.
-            double num = mService.getRandomNumber();
-            Toast.makeText(this, "number: " + num, Toast.LENGTH_SHORT).show();
+            float[][] signal = mService.getRandomNumber();
+            Toast.makeText(this, "number: " + signal[0][0], Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void playSoundOnClick(View V) {
+        //mPlayer.start();
+        Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(500);
     }
 
     /** Defines callbacks for service binding, passed to bindService() */

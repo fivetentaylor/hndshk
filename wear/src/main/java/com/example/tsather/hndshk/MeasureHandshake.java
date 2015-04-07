@@ -12,6 +12,7 @@ import android.hardware.SensorManager;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.content.Context;
+//import org.apache.commons.collections4.Q
 
 public class MeasureHandshake extends Service implements SensorEventListener {
 
@@ -23,11 +24,15 @@ public class MeasureHandshake extends Service implements SensorEventListener {
     private SensorManager mSensorManager;
     private Sensor mSensor;
     double ax,ay,az;   // these are the acceleration in x,y and z axis
+    float[][] signal;
+    int SIGNAL_SIZE = 1024;
+    int index = 0;
 
     public void onCreate() {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), 20000);
+        signal = new float[1024][3];
     }
 
     /**
@@ -47,10 +52,11 @@ public class MeasureHandshake extends Service implements SensorEventListener {
     }
 
     /** method for clients */
-    public double getRandomNumber() {
+    public float[][] getRandomNumber() {
         //return mSensorManager.registerListener();
         //return mGenerator.nextInt(100);
-        return ax;
+        //return ax;
+        return signal;
     }
 
     @Override
@@ -60,9 +66,10 @@ public class MeasureHandshake extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType()==Sensor.TYPE_LINEAR_ACCELERATION){
-            ax=event.values[0];
-            ay=event.values[1];
-            az=event.values[2];
+            signal[index][0] = event.values[0];
+            signal[index][1] = event.values[1];
+            signal[index][2] = event.values[2];
+            index = (index + 1) % SIGNAL_SIZE;
         }
     }
 }
