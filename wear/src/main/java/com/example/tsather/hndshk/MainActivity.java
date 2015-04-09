@@ -21,6 +21,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.util.Log;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 
 public class MainActivity extends Activity {
@@ -29,6 +32,12 @@ public class MainActivity extends Activity {
     boolean mBound = false;
     private TextView mTextView;
     private MediaPlayer mPlayer;
+    private MediaPlayer knuckles;
+    private MediaPlayer trad;
+    private MediaPlayer slap;
+    private MediaPlayer five;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +50,11 @@ public class MainActivity extends Activity {
                 mTextView = (TextView) stub.findViewById(R.id.text);
             }
         });
-        mPlayer = MediaPlayer.create(this, R.raw.knuckles);
+        knuckles = MediaPlayer.create(this, R.raw.knuckles);
+        trad = MediaPlayer.create(this, R.raw.trad);
+        slap = MediaPlayer.create(this, R.raw.slap);
+        five = MediaPlayer.create(this, R.raw.five);
+
     }
 
     @Override
@@ -60,7 +73,10 @@ public class MainActivity extends Activity {
             unbindService(mConnection);
             mBound = false;
         }
-        mPlayer.release();
+        knuckles.release();
+        trad.release();
+        slap.release();
+        five.release();
     }
 
     /** Called when a button is clicked (the button in the layout file attaches to
@@ -70,13 +86,13 @@ public class MainActivity extends Activity {
             // Call a method from the LocalService.
             // However, if this call were something that might hang, then this request should
             // occur in a separate thread to avoid slowing down the activity performance.
-            float[][] signal = mService.getRandomNumber();
+            double[][] signal = mService.getRandomNumber();
             Toast.makeText(this, "number: " + signal[0][511], Toast.LENGTH_SHORT).show();
         }
     }
 
     public void playSoundOnClick(View V) {
-        mPlayer.start();
+        knuckles.start();
         //Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
         //v.vibrate(500);
     }
@@ -115,7 +131,17 @@ public class MainActivity extends Activity {
             // Extract data included in the Intent
             String message = intent.getStringExtra("message");
             Log.d("receiver", "Got message: " + message);
-            mPlayer.start();
+            if( message == "five") {
+                five.start();
+            } else if ( message == "knuckles" ) {
+                knuckles.start();
+            } else if ( message == "slap" ) {
+                slap.start();
+            } else if ( message == "trad" ) {
+                trad.start();
+            } else {
+                trad.start();
+            }
         }
     };
 
