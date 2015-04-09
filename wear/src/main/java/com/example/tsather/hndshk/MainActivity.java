@@ -17,6 +17,11 @@ import android.view.View;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Vibrator;
+import android.support.v4.content.LocalBroadcastManager;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
+import android.util.Log;
+
 
 public class MainActivity extends Activity {
 
@@ -66,14 +71,14 @@ public class MainActivity extends Activity {
             // However, if this call were something that might hang, then this request should
             // occur in a separate thread to avoid slowing down the activity performance.
             float[][] signal = mService.getRandomNumber();
-            Toast.makeText(this, "number: " + signal[0][0], Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "number: " + signal[0][511], Toast.LENGTH_SHORT).show();
         }
     }
 
     public void playSoundOnClick(View V) {
-        //mPlayer.start();
-        Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(500);
+        mPlayer.start();
+        //Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+        //v.vibrate(500);
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -93,4 +98,31 @@ public class MainActivity extends Activity {
             mBound = false;
         }
     };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Register mMessageReceiver to receive messages.
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("my-event"));
+    }
+
+    // handler for received Intents for the "my-event" event
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Extract data included in the Intent
+            String message = intent.getStringExtra("message");
+            Log.d("receiver", "Got message: " + message);
+            mPlayer.start();
+        }
+    };
+
+    @Override
+    protected void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onPause();
+    }
 }

@@ -13,6 +13,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.content.Context;
 //import org.apache.commons.collections4.Q
+import android.support.v4.content.LocalBroadcastManager;
+import android.os.Handler;
+
 
 public class MeasureHandshake extends Service implements SensorEventListener {
 
@@ -25,14 +28,42 @@ public class MeasureHandshake extends Service implements SensorEventListener {
     private Sensor mSensor;
     double ax,ay,az;   // these are the acceleration in x,y and z axis
     float[][] signal;
-    int SIGNAL_SIZE = 1024;
+    float[][] window;
+    int BUFFER_SIZE = 1024;
+    int WINDOW_SIZE = 512;
     int index = 0;
+
+    private Handler handler;
+
+    private Runnable runnable;
 
     public void onCreate() {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), 20000);
-        signal = new float[1024][3];
+        signal = new float[3][BUFFER_SIZE];
+        window = new float[3][WINDOW_SIZE];
+
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                /* do what you need to do */
+                sendMessage();
+                /* and here comes the "trick" */
+                handler.postDelayed(this, 1000);
+            }
+        };
+
+        handler = new Handler();
+        handler.postDelayed(runnable, 1000);
+    }
+
+    // Send an Intent with an action named "my-event".
+    private void sendMessage() {
+        Intent intent = new Intent("my-event");
+        // add data
+        intent.putExtra("message", "data");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     /**
@@ -53,10 +84,22 @@ public class MeasureHandshake extends Service implements SensorEventListener {
 
     /** method for clients */
     public float[][] getRandomNumber() {
-        //return mSensorManager.registerListener();
-        //return mGenerator.nextInt(100);
-        //return ax;
-        return signal;
+        sendMessage();
+        int start = ((index - WINDOW_SIZE) + BUFFER_SIZE) % BUFFER_SIZE;
+        int j = 0;
+        for(int i = 0; i < WINDOW_SIZE; i++) {
+            j = (start+i) % BUFFER_SIZE;
+            float x = signal[0][j];
+            float y = signal[1][j];
+            float z = signal[2][j];
+            window[0][i] = signal[0][j];
+            window[1][i] = signal[1][j];
+            window[2][i] = signal[2][j];
+            //window[0][i] = signal[0][i];
+            //window[1][i] = signal[1][i];
+            //window[2][i] = signal[2][i];
+        }
+        return window;
     }
 
     @Override
@@ -66,10 +109,10 @@ public class MeasureHandshake extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType()==Sensor.TYPE_LINEAR_ACCELERATION){
-            signal[index][0] = event.values[0];
-            signal[index][1] = event.values[1];
-            signal[index][2] = event.values[2];
-            index = (index + 1) % SIGNAL_SIZE;
+            signal[0][index] = event.values[0];
+            signal[1][index] = event.values[1];
+            signal[2][index] = event.values[2];
+            index = (index + 1) % BUFFER_SIZE;
         }
     }
 }
